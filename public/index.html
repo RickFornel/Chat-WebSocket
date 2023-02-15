@@ -4,32 +4,61 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coup Online</title>
+    <title>Chat Online</title>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/buzz/1.1.2/buzz.min.js"></script>
+  <script src="https://www.google.com/intl/en/chrome/demos/speech.html"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <form id="chat">
-      <input type="text" name="username" placeholder="Digite seu usuario">
+      <input type="text" disabled=true name="username" placeholder="Digite seu usuario">
       <div class="messages" name="div-conteudo"></div>
       <input type="text" name="message" placeholder="Digite sua mensagem">
       <button type="submit">Enviar</button>
     </form>
     <script type="text/javascript">
-      let altura = $('.messages').height()
+
+      var context = new AudioContext();
+  var buffer = null;
+
+  function loadSound(url) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+
+    request.onload = function() {
+      context.decodeAudioData(request.response, function(decodedData) {
+        buffer = decodedData;
+      });
+    };
+
+    request.send();
+  }
+
+  function playSound() {
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
+  }
+      loadSound('audio.mp3');
+
+      let altura = $('.messages').height();
       
       function checkScroll(){
-        altura += 20
-        $('.messages').scrollTop(altura)
-      }
+        altura += 20;
+        $('.messages').scrollTop(altura);
+      };
         
       var socket = io('https://ordinaryentirelightweightprocess.rickfornel.repl.co/');
 
       function renderMessage(message){
         $('.messages').append('<div class="message"><strong>'+ message.author +' </strong>:'+message.message +'</div>');
+      playSound();
       }
 
       socket.on('previousMessage', function(messages){
@@ -37,6 +66,11 @@
           renderMessage(message)
         }
         checkScroll();
+      })
+
+      socket.on('mac', function(MacAdress){
+        let userMac = prompt('Insira o seu usuario: ')
+        $('input[name=username]').val(userMac);
       })
 
       socket.on('receivedMessage', function(message) {
