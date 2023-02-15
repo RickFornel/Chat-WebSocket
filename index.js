@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser'); 
+const getmac = require('getmac');
 
 const app = express();
 
@@ -13,14 +14,19 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
 let messages = [];
+let users = [];
 
 io.on('connection', socket => {
+  const MacAdress = getmac.default();
+  users.push(MacAdress);
+  
   console.log('Socket conectado:' + socket.id);
+  console.log('MacAdress:' + MacAdress);
 
   socket.emit('previousMessage', messages);
+  socket.emit('mac', MacAdress);
   
   socket.on('sendMessage', data => {
-    console.log(data);
     messages.push(data);
    socket.broadcast.emit('receivedMessage', data);
 });
